@@ -1,6 +1,6 @@
 # urlsh
 
-**urlsh** is URL shortener application built on [Go](https://golang.org) language.
+**[urlsh](https://urlssh.xyz)** is URL shortener application built on [Go](https://golang.org) language.
 
 It does not use external libraries except the [`gorm`](http://gorm.io) for
 [`postgres`](https://github.com/go-gorm/postgres) database and minimal redis
@@ -8,6 +8,15 @@ module [redigo](https://github.com/gomodule/redigo).
 
 It registers itself as Go module `github.com/adhocore/urlsh`
 (however it has not been submitted to Go package registry for public usage).
+
+![URLSH](./tmpl/urlsh.png)
+
+# Usage
+
+Just visit [urlssh.xyz](https://urlssh.xyz). You can also integrate API for programmatic usage.
+Read below for self hosting, API integration and/or contributing to *urlsh*.
+
+___
 
 ## Getting source
 
@@ -53,7 +62,7 @@ cp .example.env .env
 docker-compose up
 ```
 
-After a few seconds, you should be able to browse to [localhost:1000](http://localhost:1000).
+After a few seconds, you should be able to browse to [localhost:2000](http://localhost:2000).
 
 ## Testing
 
@@ -110,7 +119,7 @@ Creates a new short code for given URL.
 {
     "status": 200,
     "short_code": "qaFxz",
-    "short_url": "http://localhost:1000/qaFxz"
+    "short_url": "http://localhost:2000/qaFxz"
 }
 ```
 

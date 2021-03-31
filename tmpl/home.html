@@ -11,6 +11,18 @@
       width: 0.45em;
       font-size: 1.5em;
     }
+    .table {
+      width: 100%;
+    }
+    .th-code {
+      width: 10%;
+    }
+    .th-url {
+      width: 90%;
+    }
+    .copy-url {
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -22,7 +34,7 @@
         <div class="field">
           <div class="control has-icons-left">
             <span class="icon"><i class="fas fa-link is-left"></i></span>
-            <input class="input is-danger is-medium" id="long" type="url" required="required" placeholder="Long URL here" name="url">
+            <input class="input is-danger is-medium" id="long" type="url" required="required" placeholder="Long URL here" name="url" autocomplete="off">
           </div>
           <p class="help is-danger">URL is required, only ftp and http(s) supported</p>
         </div>
@@ -56,6 +68,17 @@
       <h4 class="subtitle">
         Source code: <a target="_blank" href="https://github.com/adhocore/urlsh">adhocore/urlsh</a>
       </h4>
+      <hr>
+      <table class="table">
+        <thead>
+          <tr>
+            <th class="th-code">Short URL</th>
+            <th class="th-url">Origin URL</th>
+          </tr>
+        </thead>
+        <tbody id="history">
+        </tbody>
+      </table>
     </div>
   </div>
 </div>
@@ -64,6 +87,8 @@ const form = document.getElementById('url-form')
 const butn = document.getElementById('button')
 const info = document.getElementById('info')
 const copy = document.getElementById('copy')
+const hist = document.getElementById('history')
+const base = `${document.location.protocol}//${document.location.host}`
 
 function shortenUrl() {
   if (butn.classList.contains('is-loading')) return false
@@ -88,7 +113,7 @@ function shortenUrl() {
 function copyShortUrl() {
   navigator.clipboard.writeText(copy.dataset.shortUrl).then(_ => {
     copy.innerText = 'Copied'
-    setTimeout(_ => copy.classList.add('is-hidden') || (info.innerText = ''), 1500)
+    setTimeout(_ => copy.classList.add('is-hidden'), 1500)
   })
 
   return false
@@ -101,19 +126,49 @@ function renderResponse(data) {
 
   if (!data.short_code) {
     info.innerText = data.message || 'unknown error'
+    copy.classList.add('is-hidden')
 
     return
   }
 
-  const shortUrl = `${document.location.protocol}//${document.location.host}/${data.short_code}`
-
-  copy.innerText = 'Copy Short URL'
+  info.innerHTML = '&nbsp;'
+  copy.innerText = `Copy ${document.location.host}/${data.short_code}`
   copy.classList.remove('is-hidden')
-  copy.dataset.shortUrl = shortUrl
+  copy.dataset.shortUrl = `${base}/${data.short_code}`
 
-  info.innerHTML = `Short URL: <a target="_blank" href="${shortUrl}">${shortUrl}</a>`
   form.reset()
+
+  if (localStorage[data.short_code]) return
+
+  localStorage[data.short_code] = data.url
+  localStorage['__'] = (data.short_code + ' ' + (localStorage['__'] || '')).trim()
+
+  setTimeout(_ => renderHistory(data.short_code, data.url, 0), 100)
 }
+
+function renderHistory(code, url, idx) {
+  const row  = hist.insertRow(idx)
+
+  row.insertCell().innerHTML = `<a href="${base}/${code}" target="_blank" title="${url}">${code}</a>
+    <span class="icon"><i class="fas fa-copy copy-url" title="Copy URL" data-short-url="${base}/${code}"></i></span>`
+  row.insertCell().innerText = url.length > 150 ? url.substring(0, 150) + '...' : url
+}
+
+function loadHistory() {
+  if (!localStorage['__']) return
+
+  for (const code of localStorage['__'].split(' ')) {
+    if (!localStorage[code]) continue
+    renderHistory(code, localStorage[code], -1)
+  }
+}
+
+setTimeout(loadHistory, 500)
+document.addEventListener('click', e => {
+  if (e.target && e.target.classList.contains('copy-url')) {
+    navigator.clipboard.writeText(e.target.dataset.shortUrl)
+  }
+})
 </script>
 </body>
 </html>
